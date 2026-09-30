@@ -18,6 +18,8 @@ import { loadTodos, saveTodos } from '../services/storage';
 export default function HomeScreen() {
   const [task, setTask] = useState('');
   const [todos, setTodos] = useState([]);
+  const [filter, setFilter] = useState('all');
+
   const isLoaded = useRef(false);
 
   useEffect(() => {
@@ -79,16 +81,17 @@ export default function HomeScreen() {
     );
   };
 
-  const filterTodos = (filter) => {
-    switch (filter) {
-      case 'completed':
-        return todos.filter((todo) => todo.completed);
-      case 'active':
-        return todos.filter((todo) => !todo.completed);
-      default:
-        return todos;
-    }
-  };
+const filteredTodos = todos.filter((todo) => {
+  if (filter === 'active') {
+    return !todo.completed;
+  }
+
+  if (filter === 'completed') {
+    return todo.completed;
+  }
+
+  return true;
+});
 
   return (
     <View style={styles.container}>
@@ -114,8 +117,61 @@ export default function HomeScreen() {
         </Pressable>
       </View>
 
+      <View style={styles.filterContainer}>
+        <Pressable
+          style={[
+            styles.filterButton,
+            filter === 'all' && styles.activeFilterButton,
+          ]}
+          onPress={() => setFilter('all')}
+        >
+          <Text
+            style={[
+              styles.filterText,
+              filter === 'all' && styles.activeFilterText,
+            ]}
+          >
+            All
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={[
+            styles.filterButton,
+            filter === 'active' && styles.activeFilterButton,
+          ]}
+          onPress={() => setFilter('active')}
+        >
+          <Text
+            style={[
+              styles.filterText,
+              filter === 'active' && styles.activeFilterText,
+            ]}
+          >
+            Active
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={[
+            styles.filterButton,
+            filter === 'completed' && styles.activeFilterButton,
+          ]}
+          onPress={() => setFilter('completed')}
+        >
+          <Text
+            style={[
+              styles.filterText,
+              filter === 'completed' && styles.activeFilterText,
+            ]}
+          >
+            Completed
+          </Text>
+        </Pressable>
+      </View>
+
       <FlatList
-        data={todos}
+        data={filteredTodos}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TodoItem
@@ -169,4 +225,34 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
+
+  filterContainer: {
+  flexDirection: 'row',
+  marginBottom: 20,
+},
+
+filterButton: {
+  flex: 1,
+  paddingVertical: 10,
+  alignItems: 'center',
+  borderWidth: 1,
+  borderColor: '#cccccc',
+  marginHorizontal: 3,
+  borderRadius: 8,
+  backgroundColor: '#bcbbbb',
+},
+
+activeFilterButton: {
+  backgroundColor: '#333333',
+},
+
+filterText: {
+  fontSize: 14,
+},
+
+activeFilterText: {
+  color: '#ffffff',
+  fontWeight: 'bold',
+},
+
 });
