@@ -1,4 +1,4 @@
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function TodoItem({
   todo,
@@ -31,9 +31,38 @@ export default function TodoItem({
 
       <Pressable
         style={styles.deleteButton}
-        onPress={() => onDelete(todo.id)}
+        onPress={() => {
+          if (Platform.OS === 'web') {
+            const confirmed = window.confirm(
+              'Are you sure you want to delete this task?'
+            );
+
+            if (confirmed) {
+              onDelete(todo.id);
+            }
+
+            return;
+          }
+
+          // Android / iOS
+          Alert.alert(
+            'Delete Task',
+            'Are you sure you want to delete this task?',
+            [
+              {
+                text: 'Cancel',
+                style: 'cancel',
+              },
+              {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: () => onDelete(todo.id),
+              },
+            ]
+          );
+        }}
       >
-        <Text style={styles.deleteButtonText}>Delete</Text>
+        <Text>Delete</Text>
       </Pressable>
     </View>
   );
