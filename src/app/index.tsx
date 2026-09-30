@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   FlatList,
@@ -9,23 +9,35 @@ import {
   View,
 } from 'react-native';
 
+
 import TodoItem from '../components/TodoItem';
+
+import { loadTodos, saveTodos } from '../services/storage';
+
 
 export default function HomeScreen() {
   const [task, setTask] = useState('');
+  const [todos, setTodos] = useState([]);
+  const isLoaded = useRef(false);
 
-  const [todos, setTodos] = useState([
-    {
-      id: '1',
-      title: 'Learn React Native',
-      completed: false,
-    },
-    {
-      id: '2',
-      title: 'Build To-Do App',
-      completed: false,
-    },
-  ]);
+  useEffect(() => {
+    const getTodos = async () => {
+      const storedTodos = await loadTodos();
+      setTodos(storedTodos);
+      isLoaded.current = true;
+    };  
+
+    getTodos();
+  }, []);
+
+  useEffect(() => {
+    if (!isLoaded.current) {
+      return;
+    }
+
+    saveTodos(todos);
+  }, [todos]);
+
 
   const addTodo = () => {
     if (!task.trim()) {
@@ -65,6 +77,17 @@ export default function HomeScreen() {
         (todo) => todo.id !== id
       )
     );
+  };
+
+  const filterTodos = (filter) => {
+    switch (filter) {
+      case 'completed':
+        return todos.filter((todo) => todo.completed);
+      case 'active':
+        return todos.filter((todo) => !todo.completed);
+      default:
+        return todos;
+    }
   };
 
   return (
@@ -111,12 +134,15 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     paddingTop: 60,
+    width: '90%',
+    alignSelf: 'center',
   },
 
   title: {
     fontSize: 30,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
   },
 
   inputRow: {

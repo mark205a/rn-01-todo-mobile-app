@@ -6,7 +6,7 @@ export default function TodoItem({
   onDelete,
 }) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, todo.completed && styles.completedContainer]}>
       <Pressable
         style={styles.taskArea}
         onPress={() => onToggle(todo.id)}
@@ -25,7 +25,7 @@ export default function TodoItem({
         style={styles.deleteButton}
         onPress={() => onDelete(todo.id)}
       >
-        <Text>Delete</Text>
+        <Text style={styles.deleteButtonText}>Delete</Text>
       </Pressable>
     </View>
   );
@@ -38,9 +38,13 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 10,
     borderRadius: 10,
-    backgroundColor: '#eee',
+    backgroundColor: '#1ea97a',
   },
 
+  completedContainer: {
+    backgroundColor: '#f5b3b3',
+  },
+  
   taskArea: {
     flex: 1,
   },
@@ -56,4 +60,8 @@ const styles = StyleSheet.create({
   deleteButton: {
     padding: 8,
   },
+  deleteButtonText: {
+    fontWeight: 'bold',
+  },
+
 });
