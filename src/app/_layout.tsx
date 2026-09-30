@@ -10,6 +10,15 @@ export default function RootLayout() {
           headerShown: false,
         }}
       />
+
+      <Stack.Screen
+        name="edit-task"
+        options={{
+          title: 'Edit Task',
+        }}
+      />
+
     </Stack>
+    
   );
 }

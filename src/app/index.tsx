@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   FlatList,
@@ -14,12 +14,39 @@ import TodoItem from '../components/TodoItem';
 
 import { loadTodos, saveTodos } from '../services/storage';
 
+import { router, useFocusEffect } from 'expo-router';
+
+
+type Todo = {
+  id: string;
+  title: string;
+  completed: boolean;
+};
 
 export default function HomeScreen() {
   const [task, setTask] = useState('');
-  const [todos, setTodos] = useState([]);
-  const [filter, setFilter] = useState('all');
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
 
+  useFocusEffect(
+    useCallback(() => {
+      const refreshTodos = async () => {
+        const storedTodos = await loadTodos();
+        setTodos(storedTodos);
+      };
+
+      refreshTodos();
+    }, [])
+  );
+
+  const totalTodos = todos.length;
+
+  const completedTodos = todos.filter(
+    (todo) => todo.completed
+  ).length;
+
+const activeTodos = totalTodos - completedTodos;
+  
   const isLoaded = useRef(false);
 
   useEffect(() => {
@@ -60,7 +87,7 @@ export default function HomeScreen() {
     setTask('');
   };
 
-  const toggleTodo = (id) => {
+  const toggleTodo = (id: string) => {
     setTodos((currentTodos) =>
       currentTodos.map((todo) =>
         todo.id === id
@@ -73,7 +100,7 @@ export default function HomeScreen() {
     );
   };
 
-  const deleteTodo = (id) => {
+  const deleteTodo = (id: string) => {
     setTodos((currentTodos) =>
       currentTodos.filter(
         (todo) => todo.id !== id
@@ -92,6 +119,29 @@ const filteredTodos = todos.filter((todo) => {
 
   return true;
 });
+
+const editTodo = (todo) => {
+  router.push({
+    pathname: '/edit-task',
+    params: {
+      id: todo.id,
+      title: todo.title,
+    },
+  });
+};
+
+const updateTodo = (id, newTitle) => {
+  setTodos((currentTodos) =>
+    currentTodos.map((todo) =>
+      todo.id === id
+        ? {
+            ...todo,
+            title: newTitle,
+          }
+        : todo
+    )
+  );
+};
 
   return (
     <View style={styles.container}>
@@ -115,6 +165,38 @@ const filteredTodos = todos.filter((todo) => {
             Add
           </Text>
         </Pressable>
+      </View>
+
+      <View style={styles.statsContainer}>
+        <View style={styles.stat}>
+          <Text style={styles.statNumber}>
+            {totalTodos}
+          </Text>
+
+          <Text style={styles.statLabel}>
+            Total
+          </Text>
+        </View>
+
+        <View style={styles.stat}>
+          <Text style={styles.statNumber}>
+            {activeTodos}
+          </Text>
+
+          <Text style={styles.statLabel}>
+            Active
+          </Text>
+        </View>
+
+        <View style={styles.stat}>
+          <Text style={styles.statNumber}>
+            {completedTodos}
+          </Text>
+
+          <Text style={styles.statLabel}>
+            Completed
+          </Text>
+        </View>
       </View>
 
       <View style={styles.filterContainer}>
@@ -178,8 +260,20 @@ const filteredTodos = todos.filter((todo) => {
             todo={item}
             onToggle={toggleTodo}
             onDelete={deleteTodo}
+            onEdit={editTodo}
           />
         )}
+         ListEmptyComponent={
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyTitle}>
+            No tasks found
+          </Text>
+
+          <Text style={styles.emptyText}>
+            Add a task to get started.
+          </Text>
+        </View>
+      }
       />
     </View>
   );
@@ -253,6 +347,40 @@ filterText: {
 activeFilterText: {
   color: '#ffffff',
   fontWeight: 'bold',
+},
+
+statsContainer: {
+  flexDirection: 'row',
+  marginBottom: 20,
+},
+
+stat: {
+  flex: 1,
+  alignItems: 'center',
+},
+
+statNumber: {
+  fontSize: 24,
+  fontWeight: 'bold',
+},
+
+statLabel: {
+  fontSize: 12,
+  marginTop: 4,
+},
+
+emptyContainer: {
+  alignItems: 'center',
+  marginTop: 50,
+},
+
+emptyTitle: {
+  fontSize: 20,
+  fontWeight: 'bold',
+},
+
+emptyText: {
+  marginTop: 8,
 },
 
 });

@@ -1,9 +1,10 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function TodoItem({
   todo,
   onToggle,
   onDelete,
+  onEdit,
 }) {
   return (
     <View style={[styles.container, todo.completed && styles.completedContainer]}>
@@ -19,6 +20,13 @@ export default function TodoItem({
         >
           {todo.title}
         </Text>
+      </Pressable>
+
+      <Pressable
+        style={styles.editButton}
+        onPress={() => onEdit(todo)}
+      >
+        <Text>Edit</Text>
       </Pressable>
 
       <Pressable
@@ -64,4 +72,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
+  editButton: {
+    padding: 8,
+    marginRight: 10,
+  },
+  editButtonText: {
+    fontWeight: 'bold',
+  },
 });
